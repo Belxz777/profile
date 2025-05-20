@@ -1,13 +1,13 @@
 "use client"
 
+import PixelCursor from "@/components/cursor"
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { motion, AnimatePresence, useDragControls } from "framer-motion"
 
 export default function TerminalResume() {
   const [isLoaded, setIsLoaded] = useState(false)
-  const [loginStep, setLoginStep] = useState(0)
+  const [loginStep, setLoginStep] = useState(1)
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [currentCommand, setCurrentCommand] = useState("")
@@ -15,9 +15,14 @@ export default function TerminalResume() {
   const [terminalOutput, setTerminalOutput] = useState<string[]>([])
   const [cursorVisible, setCursorVisible] = useState(true)
   const [expanded, setExpanded] = useState(false)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [terminalHeight, setTerminalHeight] = useState(500)
+  const [isResizing, setIsResizing] = useState(false)
   const terminalRef = useRef<HTMLDivElement>(null)
-  const dragControls = useDragControls()
+  const resizeStartY = useRef(0)
+  const initialHeight = useRef(0)
+    const [loadingProgress, setLoadingProgress] = useState(0)
+  const [showNamePreview, setShowNamePreview] = useState(false)
+
 
   // Resume data
   const resumeData = {
@@ -34,16 +39,16 @@ export default function TerminalResume() {
         institution: "МБОУ СОШ №100",
       },
       {
-        period: "2024 – 2025",
+        period: "2021– 2025",
         institution: "ЧОУ ДПО «Академия «Калашников»",
-        program: "Дополнительная образовательная программа «Аэро. Углубленный курс»",
+        program: "Дополнительная образовательная программа «ИТ. Углубленный курс»",
       },
     ],
     workExperience: [
       {
-        period: "2024",
-        position: "Слесарь механосборочных работ",
-        company: "______________",
+        period: "2022-2025",
+        position: "Простые  и не очень пет проекты ",
+
       },
     ],
     skills: {
@@ -77,20 +82,17 @@ export default function TerminalResume() {
   const commands = {
     help: () => {
       return [
-        "Доступные команды:",
-        "  help           - Показать список команд",
+        "📝 Доступные команды:",
         "  clear          - Очистить терминал",
-        "  info           - Основная информация",
-        "  education      - Образование",
-        "  experience     - Опыт работы",
-        "  skills         - Навыки",
-        "  achievements   - Достижения",
-        "  hobbies        - Увлечения",
-        "  qualities      - Личностные качества",
-        "  all            - Показать все резюме",
-        "  exit           - Выйти из системы",
-        "",
-        "Нажмите [Space] для продолжения...",
+        "  info           - Основная информация ℹ️",
+        "  education      - Образование 🎓",
+        "  experience     - Опыт работы 💼",
+        "  skills         - Навыки 🛠️",
+        "  achievements   - Достижения 🏆",
+        "  hobbies        - Увлечения 🚴",
+        "  qualities      - Личностные качества 💡",
+        "  all            - Показать все резюме 📄",
+        "  exit           - Выйти из системы 🚪",
       ]
     },
     clear: () => {
@@ -100,22 +102,22 @@ export default function TerminalResume() {
     info: () => {
       const { personalInfo } = resumeData
       return [
-        "=== Персональная информация ===",
-        `Имя:       ${personalInfo.name}`,
-        `Телефон:   ${personalInfo.phone}`,
-        `Email:     ${personalInfo.email}`,
-        `Telegram:  ${personalInfo.telegram}`,
-        `Дата рождения: ${personalInfo.birthDate}`,
+        "👤 === Персональная информация ===",
+        `📛 Имя:       ${personalInfo.name}`,
+        `📱 Телефон:   ${personalInfo.phone}`,
+        `📧 Email:     ${personalInfo.email}`,
+        `✈️ Telegram:  ${personalInfo.telegram}`,
+        `🎂 Дата рождения: ${personalInfo.birthDate}`,
         "",
       ]
     },
     education: () => {
       const { education } = resumeData
-      const output = ["=== Образование ==="]
+      const output = ["🎓 === Образование ==="]
       education.forEach((edu) => {
-        output.push(`${edu.period} - ${edu.institution}`)
+        output.push(`📅 ${edu.period} - ${edu.institution}`)
         if (edu.program) {
-          output.push(`  ${edu.program}`)
+          output.push(`  📚 ${edu.program}`)
         }
       })
       output.push("")
@@ -123,66 +125,65 @@ export default function TerminalResume() {
     },
     experience: () => {
       const { workExperience } = resumeData
-      const output = ["=== Опыт работы ==="]
+      const output = ["💼 === Опыт работы ==="]
       workExperience.forEach((exp) => {
-        output.push(`${exp.period} - ${exp.position}`)
-        output.push(`  Компания: ${exp.company}`)
+        output.push(`📅 ${exp.period} - ${exp.position}`)
       })
       output.push("")
       return output
     },
     skills: () => {
       const { skills } = resumeData
-      const output = ["=== Навыки ===", "-- Высокоуровневые языки:"]
+      const output = ["🛠️ === Навыки ===", "-- 💻 Высокоуровневые языки:"]
       skills.highLevel.forEach((skill) => {
-        output.push(`  ${skill.name} - ${skill.level}%`)
+        output.push(`  ${skill.name} - ${'■'.repeat(skill.level/10)}${'□'.repeat(10-skill.level/10)} ${skill.level}%`)
       })
-      output.push("-- Низкоуровневые языки:")
+      output.push("-- 🔧 Низкоуровневые языки:")
       skills.lowLevel.forEach((skill) => {
-        output.push(`  ${skill.name} - ${skill.level}%`)
+        output.push(`  ${skill.name} - ${'■'.repeat(skill.level/10)}${'□'.repeat(10-skill.level/10)} ${skill.level}%`)
       })
-      output.push("-- Инструменты разработки:")
+      output.push("-- 🧰 Инструменты разработки:")
       skills.tools.forEach((tool) => {
-        output.push(`  ${tool}`)
+        output.push(`  🔹 ${tool}`)
       })
-      output.push("-- IDE и среды разработки:")
+      output.push("-- 🖥️ IDE и среды разработки:")
       skills.ide.forEach((ide) => {
-        output.push(`  ${ide}`)
+        output.push(`  🔸 ${ide}`)
       })
-      output.push("-- Другие инструменты:")
+      output.push("-- 🛠️ Другие инструменты:")
       skills.other.forEach((other) => {
-        output.push(`  ${other}`)
+        output.push(`  🔹 ${other}`)
       })
-      output.push("-- Офисные программы:")
+      output.push("-- 📊 Офисные программы:")
       skills.office.forEach((office) => {
-        output.push(`  ${office}`)
+        output.push(`  📌 ${office}`)
       })
       output.push("")
       return output
     },
     achievements: () => {
       const { achievements } = resumeData
-      const output = ["=== Достижения ==="]
+      const output = ["🏆 === Достижения ==="]
       achievements.forEach((achievement, index) => {
-        output.push(`${index + 1}. ${achievement}`)
+        output.push(`🎖️ ${index + 1}. ${achievement}`)
       })
       output.push("")
       return output
     },
     hobbies: () => {
       const { hobbies } = resumeData
-      const output = ["=== Увлечения ==="]
+      const output = ["🚴 === Увлечения ==="]
       hobbies.forEach((hobby) => {
-        output.push(`- ${hobby}`)
+        output.push(`✨ ${hobby}`)
       })
       output.push("")
       return output
     },
     qualities: () => {
       const { personalQualities } = resumeData
-      const output = ["=== Личностные качества ==="]
+      const output = ["💡 === Личностные качества ==="]
       personalQualities.forEach((quality) => {
-        output.push(`- ${quality}`)
+        output.push(`⭐ ${quality}`)
       })
       output.push("")
       return output
@@ -205,10 +206,10 @@ export default function TerminalResume() {
         setTerminalOutput([])
         setCommandHistory([])
       }, 1000)
-      return ["Выход из системы...", ""]
+      return ["🚪 Выход из системы...", ""]
     },
     default: (cmd: string) => {
-      return [`Команда не найдена: ${cmd}`, "Введите 'help' для списка доступных команд", ""]
+      return [`❌ Команда не найдена: ${cmd}`, "ℹ️ Введите 'help' для списка доступных команд", ""]
     },
   }
 
@@ -216,46 +217,29 @@ export default function TerminalResume() {
   const handleKeyPress = (e: KeyboardEvent) => {
     if (loginStep < 2) {
       if (e.key === "Enter") {
-        if (loginStep === 0) {
-          setLoginStep(1)
-          setTerminalOutput([
-            ...terminalOutput,
-            `roman@desktop:~$ ssh roman@belxz-resume.ru`,
-            `roman@belxz-resume.ru's password: ${showPassword ? password : "*".repeat(password.length)}`,
-          ])
-          setPassword("")
-        } else if (loginStep === 1) {
+       if (loginStep === 1) {
           setLoginStep(2)
           const welcomeText = [
-            `Welcome to Ubuntu 24.04.2 LTS (GNU/Linux 6.8.0-53-generic x86_64)`,
+            `🌟 Добро пожаловать в мое резюме!`,
             ``,
-            `* Documentation:  https://help.ubuntu.com`,
-            `* Management:     https://landscape.canonical.com`,
-            `* Support:        https://ubuntu.com/pro`,
+            `💻 Терминал резюме Roman Belxz`,
+            `🕒 Вы здесь и время ${new Date().toLocaleTimeString()}`,
             ``,
-            `System information as of ${new Date().toLocaleString()}`,
+            `🚀 Запуск системы...`,
+            `💾 Usage of /:   99.99% of 14.68GB`,
+            `🧠 Memory usage: 55%`,
+            `🔀 Swap usage:   32%`,
             ``,
-            `System load:  0.00                Processes:             133`,
-            `Usage of /:   85.1% of 14.68GB    Users logged in:       1`,
-            `Memory usage: 55%                 IPv4 address for eth0: 81.200.158.11`,
-            `Swap usage:   0%`,
+            `⚠️ => / is using 100% of 15GB`,
             ``,
-            `=> / is using 85.1% of 14.68GB`,
+            `✅ Резюме Roman Belxz загружено и готово к просмотру.`,
+            `ℹ️ Введите 'help' для списка доступных команд.`,
             ``,
-            `* Резюме Roman Belxz загружено и готово к просмотру.`,
-            `* Введите 'help' для списка доступных команд.`,
-            ``,
-            `Last login: ${new Date().toLocaleString()} from ${Math.floor(Math.random() * 255)}.${Math.floor(
+            `📅 Last login: ${new Date().toLocaleString()} from ${Math.floor(Math.random() * 255)}.${Math.floor(
               Math.random() * 255,
             )}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-            `roman@belxz-resume:~$ `,
           ]
-          setTerminalOutput([
-            ...terminalOutput,
-            `Permission denied, please try again.`,
-            `roman@belxz-resume.ru's password: `,
-            ...welcomeText,
-          ])
+          setTerminalOutput(welcomeText)
         }
       } else if (e.key === "Backspace") {
         setPassword(password.slice(0, -1))
@@ -266,10 +250,9 @@ export default function TerminalResume() {
       if (e.key === "Enter") {
         const cmd = currentCommand.trim().toLowerCase()
         setCommandHistory([...commandHistory, cmd])
-        setTerminalOutput([...terminalOutput, `roman@belxz-resume:~$ ${currentCommand}`])
-
+        
         if (cmd in commands) {
-          const output = (commands[cmd as keyof typeof commands] as () => string[])()
+          const output = (commands[cmd as keyof typeof commands] as Function)()
           setTerminalOutput([...terminalOutput, `roman@belxz-resume:~$ ${currentCommand}`, ...output])
         } else if (cmd) {
           setTerminalOutput([...terminalOutput, `roman@belxz-resume:~$ ${currentCommand}`, ...commands.default(cmd)])
@@ -281,29 +264,56 @@ export default function TerminalResume() {
       } else if (e.key === "Backspace") {
         setCurrentCommand(currentCommand.slice(0, -1))
       } else if (e.key === " " && terminalOutput.some((line) => line.includes("[Space]"))) {
-        // Handle space bar for pagination
         setTerminalOutput(terminalOutput.filter((line) => !line.includes("[Space]")))
       } else if (e.key.length === 1) {
         setCurrentCommand(currentCommand + e.key)
       }
     }
 
-    // Scroll to bottom
     if (terminalRef.current) {
       setTimeout(() => {
         terminalRef.current!.scrollTop = terminalRef.current!.scrollHeight
       }, 0)
     }
   }
-  // Function to start drag
-  const startDrag = (event: React.PointerEvent) => {
-    dragControls.start(event, { snapToCursor: false })
+
+  // Handle resize start
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsResizing(true)
+    resizeStartY.current = e.clientY
+    initialHeight.current = terminalHeight
   }
+
+  // Handle resize move
+  useEffect(() => {
+    const handleResizeMove = (e: MouseEvent) => {
+      if (!isResizing) return
+
+      const deltaY = e.clientY - resizeStartY.current
+      const newHeight = Math.max(200, initialHeight.current + deltaY)
+      setTerminalHeight(newHeight)
+    }
+
+    const handleResizeEnd = () => {
+      setIsResizing(false)
+    }
+
+    if (isResizing) {
+      window.addEventListener("mousemove", handleResizeMove)
+      window.addEventListener("mouseup", handleResizeEnd)
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleResizeMove)
+      window.removeEventListener("mouseup", handleResizeEnd)
+    }
+  }, [isResizing])
 
   // Blinking cursor effect
   useEffect(() => {
     const cursorInterval = setInterval(() => {
-      setCursorVisible((prev) => !prev)
+     setCursorVisible((prev) => !prev)
     }, 500)
 
     return () => clearInterval(cursorInterval)
@@ -319,98 +329,108 @@ export default function TerminalResume() {
     }
   }, [loginStep, password, currentCommand, terminalOutput])
 
-  // Initial terminal text with welcome message
-  useEffect(() => {
-    if (isLoaded && terminalOutput.length === 0) {
-      const initialMessage = [
-        "╔════════════════════════════════════════════════════════════════╗",
-        "║                                                                ║",
-        "║   Добро пожаловать в интерактивное терминальное резюме!        ║",
-        "║                                                                ║",
-        "║   • Нажмите Enter для начала работы                            ║",
-        "║   • Вы можете перемещать это окно, перетаскивая его заголовок  ║",
-        "║   • Используйте кнопку в правом верхнем углу для               ║",
-        "║     разворачивания терминала на весь экран                     ║",
-        "║                                                                ║",
-        "╚════════════════════════════════════════════════════════════════╝",
-        "",
-        "roman@desktop:~$ ",
-      ]
-      setTerminalOutput(initialMessage)
-    }
-  }, [isLoaded, terminalOutput])
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 
+  useEffect(() => {
+    setIsLoaded(true)
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY })
+    }
+
+    window.addEventListener("mousemove", handleMouseMove)
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove)
+    }
+  }, [])
+
+ useEffect(() => {
+    if (loginStep === 1) {
+      const loadingInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(loadingInterval)
+            return 100
+          }
+          return prev + 10
+        })
+      }, 400)
+      setCursorVisible((prev) => !prev)
+
+      return () => clearInterval(loadingInterval)
+    }
+  }, [loginStep])
+
+  // Show name preview after loading
+  useEffect(() => {
+    if (loadingProgress === 100) {
+      setShowNamePreview(true)
+      setTimeout(() => {
+        setShowNamePreview(false)
+        setLoginStep(2)
+      }, 2000)
+    }
+  }, [loadingProgress])
+
+  // Modified welcome text with loading animation
+  const welcomeText = [
+    `🌟 Добро пожаловать в мое резюме!`,
+    ``,
+    `💻 Терминал резюме Roman Belxz`,
+    `🕒 Вы здесь и время ${new Date().toLocaleTimeString()}`,
+    ``,
+    `🚀 Запуск системы...`,
+    `[${'='.repeat(loadingProgress / 10)}${' '.repeat(10 - loadingProgress / 10)}] ${loadingProgress}%`,
+    ``,
+    loadingProgress === 100 ? `✅ Система успешно загружена` : `⚙️ Инициализация подсистем...`,
+    ``,
+    `📅 История входов: ${new Date().toLocaleString()} from ${Math.floor(Math.random() * 255)}.${Math.floor(
+      Math.random() * 255,
+    )}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+  ]
+
+  // Update terminal output when loading progresses
+  useEffect(() => {
+    if (loginStep === 1 && loadingProgress > 0) {
+      setTerminalOutput(welcomeText)
+    }
+  }, [loadingProgress])
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <motion.div
-        className={`bg-[#300a24] text-white font-mono rounded-lg overflow-hidden shadow-2xl ${
-          expanded ? "w-full h-full fixed top-0 left-0 z-50" : "w-[800px] max-w-full"
-        }`}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{
-          opacity: 1,
-          x: expanded ? 0 : position.x,
-          y: expanded ? 0 : position.y,
+       {showNamePreview && (
+        <div className="absolute inset-0 flex items-center justify-center z-50 bg-black bg-opacity-90">
+          <div className="text-5xl md:text-7xl font-bold text-center">
+            <div className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 animate-pulse">
+              <div className="transform perspective-1000 rotate-x-20">
+                ROMAN BELXZ
+              </div>
+              <div className="text-lg mt-4 text-gray-400">Full Stack Developer</div>
+            </div>
+          </div>
+        </div>
+      )}
+      <PixelCursor mousePosition={mousePosition} />
+      <div
+        className={`terminal-container `}
+        style={{
+          width: expanded ? "100%" : "800px",
+          maxWidth: "100%",
         }}
-        drag={!expanded}
-        dragControls={dragControls}
-        dragMomentum={false}
-        dragElastic={0}
-        onDragEnd={(_event: any, info: { offset: { x: number; y: number } }) => {
-          setPosition({ x: position.x + info.offset.x, y: position.y + info.offset.y })
-        }}
-        transition={{ duration: 0.5 }}
       >
         {/* Terminal header */}
-        <div className="bg-[#3c3c3c] px-4 py-2 flex justify-between items-center cursor-move" onPointerDown={startDrag}>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+        <div className="terminal-header">
+          <div className="terminal-buttons">
+            <div className="terminal-button red"></div>
+            <div className="terminal-button yellow"></div>
+            <div className="terminal-button green"></div>
           </div>
-          <div className="text-sm text-gray-300">roman@belxz-resume:~</div>
-          <div className="flex items-center space-x-2">
-            <button
+          <div className="terminal-title">roman@belxz-resume:~</div>
+          <div className="terminal-controls">
+            <button 
+              className="terminal-control-button"
               onClick={() => setExpanded(!expanded)}
-              className="text-gray-300 hover:text-white focus:outline-none"
             >
-              {expanded ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="4 14 10 14 10 20"></polyline>
-                  <polyline points="20 10 14 10 14 4"></polyline>
-                  <line x1="14" y1="10" x2="21" y2="3"></line>
-                  <line x1="3" y1="21" x2="10" y2="14"></line>
-                </svg>
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="15 3 21 3 21 9"></polyline>
-                  <polyline points="9 21 3 21 3 15"></polyline>
-                  <line x1="21" y1="3" x2="14" y2="10"></line>
-                  <line x1="3" y1="21" x2="10" y2="14"></line>
-                </svg>
-              )}
-            </button>
-            <button className="text-gray-300 hover:text-white focus:outline-none">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -422,8 +442,11 @@ export default function TerminalResume() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
+                {expanded ? (
+                  <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                ) : (
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                )}
               </svg>
             </button>
           </div>
@@ -432,48 +455,50 @@ export default function TerminalResume() {
         {/* Terminal content */}
         <div
           ref={terminalRef}
-          className={`p-4 overflow-auto ${expanded ? "h-[calc(100vh-40px)]" : "h-[500px]"}`}
-          style={{ whiteSpace: "pre-wrap" }}
+          className="terminal-content"
+          style={{
+            height: expanded ? "calc(100vh - 40px)" : `${terminalHeight}px`,
+          }}
         >
-          <AnimatePresence>
-            {terminalOutput.map((line, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.1 }}
-                className="leading-tight"
-              >
-                {line}
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          {terminalOutput.map((line, index) => (
+            <div key={index} className="terminal-line fade-in">
+              {line}
+            </div>
+          ))}
+          
           {loginStep === 0 && (
-            <span className="inline-block">
-              {currentCommand}
-              <span
-                className={`inline-block w-2 h-4 bg-white ml-0.5 ${cursorVisible ? "opacity-100" : "opacity-0"}`}
-              ></span>
-            </span>
+            <div className="terminal-input-line">
+              <span className="text-green-400">roman@desktop:~$ </span>
+              <span className="terminal-input">{currentCommand}</span>
+              <span className={`terminal-cursor ${cursorVisible ? "visible" : "hidden"}`}></span>
+            </div>
           )}
+          
           {loginStep === 1 && (
-            <span className="inline-block">
-              {showPassword ? password : "*".repeat(password.length)}
-              <span
-                className={`inline-block w-2 h-4 bg-white ml-0.5 ${cursorVisible ? "opacity-100" : "opacity-0"}`}
-              ></span>
-            </span>
+            <div className="terminal-input-line">
+              <span className="text-purple-400">roman@belxz-resume.ru's password: </span>
+              <span className="terminal-input">{showPassword ? password : "*".repeat(password.length)}</span>
+              <span className={`terminal-cursor ${cursorVisible ? "visible" : "hidden"}`}></span>
+            </div>
           )}
+          
           {loginStep === 2 && (
-            <span className="inline-block">
-              {currentCommand}
-              <span
-                className={`inline-block w-2 h-4 bg-white ml-0.5 ${cursorVisible ? "opacity-100" : "opacity-0"}`}
-              ></span>
-            </span>
+            <div className="terminal-input-line">
+              <span className="text-green-400">roman@belxz-resume:~$ </span>
+              <span className="terminal-input">{currentCommand}</span>
+              <span className={`terminal-cursor ${cursorVisible ? "visible" : "hidden"}`}></span>
+            </div>
           )}
         </div>
-      </motion.div>
+
+        {/* Resize handle */}
+        <div 
+          className="terminal-resize-handle"
+          onMouseDown={handleResizeStart}
+        >
+          <div className="terminal-resize-indicator"></div>
+        </div>
+      </div>
     </div>
   )
 }

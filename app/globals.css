@@ -2,13 +2,166 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-black text-white;
+/* Base styles */
+body {
+  background-color: black;
+  color: white;
+  margin: 0;
+  padding: 0;
+  font-family: "Ubuntu Mono", monospace;
+}
+
+/* Terminal container */
+.terminal-container {
+  background-color: #300a24;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+.terminal-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  cursor:  none;
+  border-radius: 0;
+
+}
+
+/* Terminal header */
+.terminal-header {
+  background-color: #3c3c3c;
+  padding: 0.5rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.terminal-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.terminal-button {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+}
+
+.terminal-button.red {
+  background-color: #ff5f56;
+}
+
+.terminal-button.yellow {
+  background-color: #ffbd2e;
+}
+
+.terminal-button.green {
+  background-color: #27c93f;
+}
+
+.terminal-title {
+  font-size: 0.875rem;
+  color: #d9d9d9;
+}
+
+.terminal-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.terminal-control-button {
+  background: none;
+  border: none;
+  color: #d9d9d9;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.terminal-control-button:hover {
+  color: white;
+}
+
+.terminal-control-button:focus {
+  outline: none;
+}
+
+/* Terminal content */
+.terminal-content {
+  padding: 1rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  transition: height 0.3s ease;
+}
+
+.terminal-line {
+  line-height: 1.2;
+}
+.terminal-input {
+  display: inline;
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 0.5rem;
+  height: 1rem;
+  background-color: white;
+  margin-left: 0.125rem;
+  transition: opacity 0.3s ease;
+  vertical-align: middle;
+}
+
+.terminal-cursor.visible {
+  opacity: 1;
+}
+
+.terminal-cursor.hidden {
+  opacity: 0;
+}
+
+/* Resize handle */
+.terminal-resize-handle {
+  height: 0.5rem;
+  background-color: #3c3c3c;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.terminal-resize-indicator {
+  width: 4rem;
+  height: 0.25rem;
+  background-color: #666;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.terminal-resize-handle:hover .terminal-resize-indicator {
+  background-color: #999;
+}
+
+/* Animation */
+.fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
-/* Custom scrollbar for terminal */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -34,12 +187,50 @@
   font-weight: normal;
   font-style: normal;
 }
-
-.font-mono {
-  font-family: "Ubuntu Mono", monospace;
+* {
+  cursor: none !important;
 }
 
-/* Prevent text selection in terminal header */
-.cursor-move {
-  user-select: none;
+ [class*="pixel-character"],
+  [class*="pixel-cursor"] {
+    display: none !important;
+  }
+  /* Add these to your existing CSS */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.rotate-x-20 {
+  transform: rotateX(20deg);
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 3D text effect */
+.text-3d {
+  text-shadow: 
+    0 1px 0 #ccc,
+    0 2px 0 #c9c9c9,
+    0 3px 0 #bbb,
+    0 4px 0 #b9b9b9,
+    0 5px 0 #aaa,
+    0 6px 1px rgba(0,0,0,.1),
+    0 0 5px rgba(0,0,0,.1),
+    0 1px 3px rgba(0,0,0,.3),
+    0 3px 5px rgba(0,0,0,.2),
+    0 5px 10px rgba(0,0,0,.25),
+    0 10px 10px rgba(0,0,0,.2),
+    0 20px 20px rgba(0,0,0,.15);
 }
